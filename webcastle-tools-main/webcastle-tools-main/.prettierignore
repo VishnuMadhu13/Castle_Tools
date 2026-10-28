@@ -1,0 +1,29 @@
+# Package managers & lockfiles
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+
+# Next.js build outputs & caches
+.next/
+out/
+build/
+dist/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test coverage
+coverage/
+
+# Environment files
+.env
+.env*.local
+
+# Database migrations & local data
+postgres_data/
+db/migrations/
+
+# Public assets
+public/
