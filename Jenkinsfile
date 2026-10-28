@@ -29,12 +29,12 @@ pipeline {
         DOCKERHUB_USER  = 'vishnumadhu13'
         IMAGE           = "${DOCKERHUB_USER}/${APP_NAME}"
         TAG             = "${BUILD_NUMBER}"
-        GITHUB_REPO     = 'https://github.com/VishnuMadhu13/Castle_Tools.git'
+        GITHUB_REPO     = 'github.com/VishnuMadhu13/Castle_Tools.git'
         GIT_BRANCH_NAME = 'main'
         MANIFEST_FILE   = 'k8s/deployment.yaml'
 
         // Jenkins credential / tool IDs
-        DOCKERHUB_CREDS = 'docker-cred'
+        DOCKERHUB_CREDS = 'dockerhub-creds'
         GITHUB_CREDS    = 'github-jenkins'
         SONAR_SERVER    = 'sonarqube'
         SONAR_SCANNER   = 'sonar-scanner'
@@ -42,7 +42,7 @@ pipeline {
         // Tool versions (installed into the workspace, cached between builds)
         NODE_VERSION    = '22.11.0'
         BUN_VERSION     = '1.2.23'
-        TRIVY_VERSION   = '0.56.2'
+        TRIVY_VERSION   = '0.69.3'
 
         TOOLS           = "${WORKSPACE}/.tools"
         REPORT_DIR      = "${WORKSPACE}/reports"
@@ -84,10 +84,19 @@ pipeline {
                         npm install -g "bun@${BUN_VERSION}" --prefix "$TOOLS/bun"
                     fi
 
-                    # Trivy
+                    # Trivy — direct release download + SHA256 check
                     if [ ! -x "$TOOLS/bin/trivy" ]; then
-                        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-                          | sh -s -- -b "$TOOLS/bin" "v${TRIVY_VERSION}"
+                        TV="$TRIVY_VERSION"
+                        BASE="https://github.com/aquasecurity/trivy/releases/download/v${TV}"
+                        cd "$TOOLS"
+                        curl -fSL -o trivy.tgz  "${BASE}/trivy_${TV}_Linux-64bit.tar.gz"
+                        curl -fSL -o trivy.sums "${BASE}/trivy_${TV}_checksums.txt"
+                        EXPECTED=$(grep "trivy_${TV}_Linux-64bit.tar.gz" trivy.sums | awk '{print $1}')
+                        ACTUAL=$(sha256sum trivy.tgz | awk '{print $1}')
+                        [ "$EXPECTED" = "$ACTUAL" ] || { echo "Trivy checksum mismatch"; exit 1; }
+                        tar -xzf trivy.tgz -C "$TOOLS/bin" trivy
+                        rm -f trivy.tgz trivy.sums
+                        cd "$WORKSPACE"
                     fi
 
                     # Semgrep (Python venv)
