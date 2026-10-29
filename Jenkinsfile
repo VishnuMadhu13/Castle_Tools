@@ -243,9 +243,9 @@ pipeline {
                         sleep 2
                     done
 
-                    # 2. Run Drizzle migrations using the built image
+                    # 2. Run Drizzle migrations using the built image (node db/migrate.mjs)
                     docker run --rm --network "$NET" -e DATABASE_URL="$DB_URL" \
-                      "$IMAGE:$TAG" node_modules/.bin/drizzle-kit migrate
+                      "$IMAGE:$TAG" node db/migrate.mjs
 
                     # 3. Start the app with dummy (non-production) secrets
                     docker run -d --name "$APP" --network "$NET" \
@@ -362,7 +362,14 @@ pipeline {
             echo 'Pipeline failed — check the stage logs above.'
         }
         always {
-            sh 'docker image prune -f || true'
+            sh '''
+                # Image is already on Docker Hub — free local disk (EC2 volume is small)
+                docker rmi "$IMAGE:$TAG" "$IMAGE:latest" 2>/dev/null || true
+                docker image prune -f || true
+                docker builder prune -f --filter "until=24h" || true
+                rm -rf "$WORKSPACE/$APP_DIR/.next" "$WORKSPACE/$APP_DIR/.scannerwork"
+                df -h / | tail -1
+            '''
         }
     }
 }

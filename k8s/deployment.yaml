@@ -17,7 +17,7 @@ spec:
       initContainers:
         - name: db-migrate
           image: vishnumadhu13/castle-tools:latest
-          command: ["node_modules/.bin/drizzle-kit", "migrate"]
+          command: ["node", "db/migrate.mjs"]
           envFrom:
             - secretRef:
                 name: castle-tools-secrets
@@ -32,6 +32,8 @@ spec:
           env:
             - name: AUTH_TRUST_HOST
               value: "true"
+            - name: HOSTNAME
+              value: "0.0.0.0"
           readinessProbe:
             tcpSocket:
               port: 3000
@@ -48,7 +50,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: 500m
-              memory: 768Mi
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
