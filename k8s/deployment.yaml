@@ -16,14 +16,14 @@ spec:
     spec:
       initContainers:
         - name: db-migrate
-          image: vishnumadhu13/castle-tools:latest
+          image: vishnumadhu13/castle-tools:15
           command: ["node", "db/migrate.mjs"]
           envFrom:
             - secretRef:
                 name: castle-tools-secrets
       containers:
         - name: castle-tools
-          image: vishnumadhu13/castle-tools:latest
+          image: vishnumadhu13/castle-tools:15
           ports:
             - containerPort: 3000
           envFrom:
