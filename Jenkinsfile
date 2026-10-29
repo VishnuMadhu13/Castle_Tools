@@ -34,7 +34,7 @@ pipeline {
         MANIFEST_FILE   = 'k8s/deployment.yaml'
 
         // Jenkins credential / tool IDs
-        DOCKERHUB_CREDS = 'dockerhub-creds'
+        DOCKERHUB_CREDS = 'docker-cred'
         GITHUB_CREDS    = 'github-jenkins'
         SONAR_SERVER    = 'sonarqube'
         SONAR_SCANNER   = 'sonar-scanner'
